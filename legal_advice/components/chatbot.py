@@ -1,27 +1,32 @@
 import reflex as rx
+import openai
+import os
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 class ChatState(rx.State):
     question: str = ""
     chat_history: list[tuple[str, str]] = []
 
     def answer(self):
-        # Respuestas predefinidas del chatbot
-        legal_responses = {
-            "contrato": "Un contrato es un acuerdo legal entre partes que crea obligaciones exigibles. Debe contener: oferta, aceptación, consideración y capacidad legal de las partes.",
-            "divorcio": "El proceso de divorcio varía por jurisdicción. Generalmente requiere presentar una petición, notificar a la otra parte, resolver asuntos de custodia, manutención y división de bienes.",
-            "herencia": "Las leyes de herencia determinan cómo se distribuyen los bienes de una persona fallecida. Si hay testamento, generalmente se sigue; si no, se aplican las leyes de sucesión intestada.",
-            "laboral": "Los derechos laborales básicos incluyen salario mínimo, horas extras, condiciones seguras de trabajo y protección contra despido injustificado. Varían por país.",
-        }
-        
-        # Buscar palabras clave en la pregunta
-        answer = "Lo siento, no puedo proporcionar asesoría legal específica. Para consultas complejas, recomiendo contactar a un abogado certificado. "
-        answer += "Puedo ofrecer información general sobre: contratos, divorcio, herencia o temas laborales."
-        
-        for key in legal_responses:
-            if key in self.question.lower():
-                answer = legal_responses[key]
-                break
-        
+        # Respuesta usando IA (OpenAI)
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "Eres un asistente legal que proporciona información general sobre temas legales. No des asesoría legal específica.",
+                    },
+                    {"role": "user", "content": self.question},
+                ],
+                temperature=0.5,
+                max_tokens=500,
+            )
+            answer = response.choices[0].message["content"].strip()
+        except Exception as e:
+            answer = "Ocurrió un error al obtener la respuesta. Por favor, intenta más tarde."
+
         self.chat_history.append((self.question, answer))
         self.question = ""
 
@@ -58,7 +63,7 @@ def chatbot():
             border_radius="lg",
             box_shadow="md",
         ),
-      position="fixed",
+        position="fixed",
         bottom="4",
         right="4",
         z_index="1000",
@@ -66,7 +71,7 @@ def chatbot():
             "transform": "translateY(0)",
             "transition": "transform 0.3s ease",
             "_hover": {
-                "transform": "translateY(-1px)"
+                "transform": "translateY(-5px)"
             }
         }
     )
