@@ -6,7 +6,7 @@ COLORS = {
     "secondary": "#E74C3C",  # Rojo
     "accent": "#3498DB",  # Azul claro
     "background": "#F8F9FA",  # Gris claro
-    "text": "#333333",
+    "text": "#181717",
 }
 
 BASE_STYLE = {

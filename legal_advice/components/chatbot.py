@@ -9,26 +9,21 @@ class ChatState(rx.State):
     chat_history: list[tuple[str, str]] = []
 
     def answer(self):
-        # Respuesta usando IA (OpenAI)
         try:
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
-                    {
-                        "role": "system",
-                        "content": "Eres un asistente legal que proporciona información general sobre temas legales. No des asesoría legal específica.",
-                    },
+                    {"role": "system", "content": "Eres un asistente legal..."},
                     {"role": "user", "content": self.question},
                 ],
                 temperature=0.5,
                 max_tokens=500,
             )
+            print("API RESPONSE:", response)  
             answer = response.choices[0].message["content"].strip()
         except Exception as e:
+            print("ERROR:", e)  
             answer = "Ocurrió un error al obtener la respuesta. Por favor, intenta más tarde."
-
-        self.chat_history.append((self.question, answer))
-        self.question = ""
 
 def chatbot():
     return rx.box(
@@ -39,7 +34,7 @@ def chatbot():
                     ChatState.chat_history,
                     lambda message: rx.vstack(
                         rx.text(f"Tú: {message[0]}", align="left", width="100%"),
-                        rx.text(f"Asistente: {message[1]}", align="left", width="100%", color="accent"),
+                        rx.text(f"Asistente: {message[1]}", align="left", width="100%", color="text"),
                         spacing="2",
                         width="100%",
                     ),
@@ -58,20 +53,15 @@ def chatbot():
                 rx.button("Enviar", on_click=ChatState.answer),
                 width="100%",
             ),
+        width="100%",
+            max_width="600px",
+            margin_y="4",
+            padding="4",
             bg="white",
-            padding="2",
             border_radius="lg",
             box_shadow="md",
         ),
-        position="fixed",
-        bottom="4",
-        right="4",
-        z_index="1000",
-        style={
-            "transform": "translateY(0)",
-            "transition": "transform 0.3s ease",
-            "_hover": {
-                "transform": "translateY(-5px)"
-            }
-        }
+        width="100%",
+        display="flex",
+        justify_content="center",
     )
